@@ -184,7 +184,7 @@ cython_debug/
 # Visual Studio Code
 #  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
+#  that can be added to the global gitignore or merged into this file. However, if you prefer, 
 #  you could uncomment the following to ignore the entire vscode folder
 # .vscode/
 
@@ -205,3 +205,126 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ===== 项目特定忽略规则 =====
+
+# 测试文件和演示文件
+test_*.py
+demo_*.py
+*_test.py
+*_demo.py
+
+# 临时文件和日志
+*.tmp
+*.temp
+*.log
+*.bak
+*.swp
+*.swo
+*~
+
+# 音频文件（可能很大）
+*.wav
+*.mp3
+*.flac
+*.aac
+*.ogg
+*.m4a
+
+# 视频文件
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.mkv
+
+# 图片文件
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.ico
+
+# 文档文件
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+
+# 压缩文件
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.bz2
+
+# 可执行文件
+*.exe
+*.msi
+*.dmg
+*.pkg
+*.deb
+*.rpm
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 配置文件（包含敏感信息）
+.env.local
+.env.production
+.env.staging
+config.local.py
+settings.local.py
+
+# IDE和编辑器文件
+.vscode/
+.idea/
+*.sublime-*
+.atom/
+.brackets.json
+
+# 操作系统生成的文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# 临时构建文件
+build_exe.py
+build_simple.py
+build.bat
+build.sh
+
+# 大型数据文件
+*.csv
+*.json
+*.xml
+*.yaml
+*.yml
+data/
+datasets/
+models/
+weights/
+checkpoints/
+
+# 缓存和临时目录
+.cache/
+.temp/
+tmp/
+temp/
+
+
+*.pt

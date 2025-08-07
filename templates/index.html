@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI Agent 智能助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            height: calc(100vh - 200px);
+        }
+
+        .chat-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            background: #e3f2fd;
+            margin-left: auto;
+            border-left: 4px solid #2196f3;
+        }
+
+        .message.assistant {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .message.tool {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .message-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-group textarea {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .tool-section {
+            margin-bottom: 25px;
+        }
+
+        .tool-section h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .status-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .status-info p {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tool-call {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .tool-call .tool-name {
+            font-weight: bold;
+            color: #ff9800;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .tool-call .tool-input {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 0.85em;
+            border-left: 3px solid #2196f3;
+        }
+
+        .tool-call .tool-output {
+            background: #e8f5e8;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 0.85em;
+            border-left: 3px solid #4caf50;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .tool-call .tool-status {
+            color: #4caf50;
+            font-weight: bold;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .message-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 5px;
+        }
+
+        .btn-voice {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-voice:hover {
+            background: #45a049;
+        }
+
+        .thinking {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-style: italic;
+            color: #2e7d32;
+        }
+
+        .image-display {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .image-display img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 2px solid #ddd;
+        }
+
+        .image-display .image-caption {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .image-display .image-error {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .image-display .image-loading {
+            color: #2196f3;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .example-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .example-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .message {
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Agent 智能助手</h1>
+            <p>基于OpenAI API的智能助手，支持工具调用功能</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 聊天区域 -->
+            <div class="chat-section">
+                <div class="chat-header">
+                    <h3>💬 对话界面</h3>
+                    <button class="btn btn-danger" onclick="resetConversation()">🔄 重置对话</button>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-header">🤖 AI助手</div>
+                        <div>你好！我是AI智能助手，我可以帮助您：</div>
+                        <ul style="margin-top: 10px; margin-left: 20px;">
+                            <li>🎙️ 录制和播放音频</li>
+                            <li>📝 文本转语音</li>
+                            <li>🌐 网页搜索</li>
+                            <li>📊 信息总结</li>
+                            <li>💬 智能对话</li>
+                        </ul>
+                        <div style="margin-top: 10px;">请告诉我您需要什么帮助！</div>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <div id="loadingText">AI正在思考中...</div>
+                </div>
+
+                <div class="chat-input">
+                    <div class="input-group">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="输入您的消息..." 
+                            rows="3"
+                            onkeypress="handleKeyPress(event)"></textarea>
+                        <button class="btn btn-primary" onclick="sendMessage()">🚀 发送</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <!-- 系统状态 -->
+                <div class="tool-section">
+                    <h3>ℹ️ 系统状态</h3>
+                    <div class="status-info" id="statusInfo">
+                        <p><strong>模型:</strong> <span id="modelInfo">加载中...</span></p>
+                        <p><strong>模型描述:</strong> <span id="modelDescription">加载中...</span></p>
+                        <p><strong>API地址:</strong> <span id="apiUrl">加载中...</span></p>
+                        <p><strong>对话轮数:</strong> <span id="conversationCount">0</span></p>
+                        <p><strong>状态:</strong> <span style="color: green;">✅ 正常</span></p>
+                    </div>
+                </div>
+
+                <!-- 模型选择 -->
+                <div class="tool-section">
+                    <h3>🤖 模型选择</h3>
+                    <div class="form-group">
+                        <label>选择模型:</label>
+                        <select id="modelSelect" onchange="switchModel()">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" onclick="updateModelsFromAPI()" style="width: 100%; margin-bottom: 10px;">
+                        🔄 从API更新模型
+                    </button>
+                    <div id="modelSwitchStatus" style="display: none;"></div>
+                </div>
+
+                <!-- 统一Agent信息 -->
+                <div class="tool-section">
+                    <h3>🧠 统一AI Agent</h3>
+                    <div class="form-group">
+                        <label>当前Agent:</label>
+                        <div id="currentAgentInfo" style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 12px;">
+                            🔗 统一LangChain Agent - 集成所有功能（音频、搜索、本地工具等）
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 语音播放设置 -->
+                <div class="tool-section">
+                    <h3>🔊 语音播放设置</h3>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="autoVoicePlay" style="margin-right: 8px; transform: scale(1.2);">
+                            <span>自动播放AI回答语音</span>
+                        </label>
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            开启后，所有AI回答都会自动转换为语音播放
+                        </small>
+                    </div>
+                </div>
+
+                <!-- 功能说明 -->
+                <div class="tool-section">
+                    <h3>🔧 可用功能</h3>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 13px;">
+                        <p><strong>🎤 音频功能:</strong></p>
+                        <ul style="margin-left: 15px; margin-bottom: 10px;">
+                            <li>录制音频</li>
+                            <li>播放音频</li>
+                            <li>文本转语音</li>
+                        </ul>
+                        
+                        <p><strong>🌐 网络功能:</strong></p>
+                        <ul style="margin-left: 15px; margin-bottom: 10px;">
+                            <li>网页搜索</li>
+                            <li>搜索并总结</li>
+                            <li>打开浏览器</li>
+                        </ul>
+                        
+                        <p><strong>💻 本地工具:</strong></p>
+                        <ul style="margin-left: 15px;">
+                            <li>执行系统命令</li>
+                            <li>文件操作</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 使用示例 -->
+                <div class="tool-section">
+                    <h3>💡 使用示例</h3>
+                    <button class="example-btn" onclick="setExample('请帮我搜索关于人工智能的最新信息')">
+                        🔍 搜索人工智能信息
+                    </button>
+                    <button class="example-btn" onclick="setExample('请录制5秒音频')">
+                        🎙️ 录制音频
+                    </button>
+                    <button class="example-btn" onclick="setExample('请将"你好世界"转换为语音')">
+                        🔊 文本转语音
+                    </button>
+                    <button class="example-btn" onclick="setExample('请搜索并总结今天的天气情况')">
+                        🌤️ 天气搜索
+                    </button>
+                    <button class="example-btn" onclick="setExample('请帮我打开百度首页')">
+                        🌐 打开网页
+                    </button>
+                    <button class="example-btn" onclick="setExample('请帮我打开记事本')">
+                        📝 打开应用程序
+                    </button>
+                    <button class="example-btn" onclick="setExample('请帮我创建一个测试文件')">
+                        📄 文件操作
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let lastAudioFile = null;
+        let autoVoicePlay = false; // 全局语音播放开关
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStatus();
+            loadModels();
+            loadConversationHistory();
+            
+            // 初始化语音播放开关
+            const autoVoiceCheckbox = document.getElementById('autoVoicePlay');
+            autoVoiceCheckbox.addEventListener('change', function() {
+                autoVoicePlay = this.checked;
+                // 保存设置到本地存储
+                localStorage.setItem('autoVoicePlay', autoVoicePlay);
+                showAlert(autoVoicePlay ? '✅ 已开启自动语音播放' : '🔇 已关闭自动语音播放', 'success');
+            });
+            
+            // 从本地存储恢复设置
+            const savedAutoVoice = localStorage.getItem('autoVoicePlay');
+            if (savedAutoVoice === 'true') {
+                autoVoiceCheckbox.checked = true;
+                autoVoicePlay = true;
+            }
+        });
+
+        // 发送消息
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 添加用户消息到界面
+            addMessage('user', message);
+            input.value = '';
+            
+            // 显示加载状态
+            showLoading(true, 'AI正在思考中...');
+            
+            // 显示思考状态
+            const thinkingDiv = showThinking('AI正在分析您的需求...');
+            
+            try {
+                // 发送聊天请求
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // 移除思考状态
+                thinkingDiv.remove();
+                
+                if (data.success) {
+                    // 显示工具调用信息
+                    if (data.tool_calls && data.tool_calls.length > 0) {
+                        data.tool_calls.forEach(toolCall => {
+                            const toolCallDiv = document.createElement('div');
+                            toolCallDiv.className = 'tool-call';
+                            
+                            let toolInfo = `<div class="tool-name">🔧 调用工具: ${toolCall.tool}</div>`;
+                            if (toolCall.input) {
+                                const inputStr = typeof toolCall.input === 'object' ? 
+                                    JSON.stringify(toolCall.input, null, 2) : toolCall.input;
+                                toolInfo += `<div class="tool-input">📥 输入参数: ${inputStr}</div>`;
+                            }
+                            if (toolCall.output) {
+                                const outputPreview = toolCall.output.length > 200 ? 
+                                    toolCall.output.substring(0, 200) + '...' : toolCall.output;
+                                toolInfo += `<div class="tool-output">📤 输出结果: ${outputPreview}</div>`;
+                            }
+                            toolInfo += `<div class="tool-status">✅ 执行完成</div>`;
+                            
+                            toolCallDiv.innerHTML = toolInfo;
+                            document.getElementById('chatMessages').appendChild(toolCallDiv);
+                        });
+                    }
+                    
+                    addMessage('assistant', data.response, true);
+                } else {
+                    addMessage('assistant', `❌ 错误: ${data.error}`, false);
+                }
+            } catch (error) {
+                addMessage('assistant', `❌ 网络错误: ${error.message}`, false);
+            } finally {
+                showLoading(false);
+                loadStatus();
+            }
+        }
+
+        // 添加消息到界面
+        function addMessage(role, content, showVoiceButton = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const header = document.createElement('div');
+            header.className = 'message-header';
+            header.textContent = role === 'user' ? '👤 用户' : '🤖 AI助手';
+            
+            const contentDiv = document.createElement('div');
+            
+            // 优化AI助手回复内容显示
+            let displayContent = content;
+            if (role === 'assistant') {
+                displayContent = optimizeAssistantResponse(content);
+            }
+            
+            // 自动将内容中的http/https链接转为超链接
+            displayContent = linkify(displayContent);
+            
+            // 处理图片路径并展示图片
+            displayContent = processImagePaths(displayContent, contentDiv);
+            
+            contentDiv.innerHTML = displayContent.replace(/\n/g, '<br>');
+            
+            messageDiv.appendChild(header);
+            messageDiv.appendChild(contentDiv);
+            
+            // 如果是AI助手的消息且需要显示语音按钮，添加操作按钮
+            if (role === 'assistant' && showVoiceButton) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'message-actions';
+                
+                const voiceBtn = document.createElement('button');
+                voiceBtn.className = 'btn btn-small btn-voice';
+                voiceBtn.innerHTML = '🔊 语音播放';
+                voiceBtn.onclick = () => playTextAsSpeech(displayContent); // 使用优化后的内容
+                
+                actionsDiv.appendChild(voiceBtn);
+                messageDiv.appendChild(actionsDiv);
+                
+                // 如果开启了自动语音播放，自动播放语音
+                if (autoVoicePlay) {
+                    setTimeout(() => {
+                        playTextAsSpeech(displayContent); // 使用优化后的内容
+                    }, 500); // 延迟500ms播放，让用户先看到文字
+                }
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            
+            // 滚动到底部
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // 处理图片路径并展示图片
+        function processImagePaths(content, contentDiv) {
+            console.log('开始处理图片路径，内容:', content);
+            
+            // 匹配常见的图片文件路径模式
+            const imagePatterns = [
+                /([a-zA-Z]:\\[^\s]+\.(jpg|jpeg|png|gif|bmp|webp))/gi,  // Windows绝对路径
+                /(\/[^\s]+\.(jpg|jpeg|png|gif|bmp|webp))/gi,          // Unix绝对路径
+                /([^\s]+\.(jpg|jpeg|png|gif|bmp|webp))/gi,            // 相对路径
+                /(detection_result_\d{8}_\d{6}\.jpg)/gi,              // 检测结果图片
+                /(photo_\d{8}_\d{6}\.jpg)/gi,                         // 拍照图片
+                /(frame_\d{4}\.jpg)/gi                                // 视频帧图片
+            ];
+            
+            let processedContent = content;
+            let imageIndex = 0;
+            
+            imagePatterns.forEach(pattern => {
+                processedContent = processedContent.replace(pattern, (match, path) => {
+                    console.log('找到图片路径:', path);
+                    // 检查是否是有效的图片路径
+                    if (isValidImagePath(path)) {
+                        console.log('路径有效，准备显示图片:', path);
+                        imageIndex++;
+                        const imageId = `image-${Date.now()}-${imageIndex}`;
+                        
+                        // 创建图片展示元素
+                        setTimeout(() => {
+                            displayImage(path, imageId, contentDiv);
+                        }, 100);
+                        
+                        // 返回占位符，稍后会被图片替换
+                        return `<div id="${imageId}" class="image-display">
+                            <div class="image-loading">🖼️ 正在加载图片: ${path}</div>
+                        </div>`;
+                    } else {
+                        console.log('路径无效:', path);
+                    }
+                    return match;
+                });
+            });
+            
+            // 特别处理AI回复中的图片路径标记
+            const pathPattern = /📷 图片路径: ([^\n\r]+)/g;
+            processedContent = processedContent.replace(pathPattern, (match, path) => {
+                console.log('找到AI标记的图片路径:', path.trim());
+                if (isValidImagePath(path.trim())) {
+                    console.log('AI标记的路径有效，准备显示图片:', path.trim());
+                    imageIndex++;
+                    const imageId = `image-${Date.now()}-${imageIndex}`;
+                    
+                    // 创建图片展示元素
+                    setTimeout(() => {
+                        displayImage(path.trim(), imageId, contentDiv);
+                    }, 100);
+                    
+                    // 返回占位符，稍后会被图片替换
+                    return `<div id="${imageId}" class="image-display">
+                        <div class="image-loading">🖼️ 正在加载图片: ${path.trim()}</div>
+                    </div>`;
+                } else {
+                    console.log('AI标记的路径无效:', path.trim());
+                }
+                return match;
+            });
+            
+            return processedContent;
+        }
+        
+        // 检查是否是有效的图片路径
+        function isValidImagePath(path) {
+            console.log('验证图片路径:', path);
+            
+            // 检查文件扩展名
+            const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+            const hasValidExtension = validExtensions.some(ext => 
+                path.toLowerCase().endsWith(ext)
+            );
+            
+            if (!hasValidExtension) {
+                console.log('无效的文件扩展名:', path);
+                return false;
+            }
+            
+            // 检查路径格式 - 更宽松的验证
+            const validPathPatterns = [
+                /^[a-zA-Z]:\\/,  // Windows绝对路径
+                /^\//,           // Unix绝对路径
+                /^\./,           // 相对路径
+                /^detection_result_\d{8}_\d{6}\.jpg$/,  // 检测结果图片
+                /^photo_\d{8}_\d{6}\.jpg$/,             // 拍照图片
+                /^frame_\d{4}\.jpg$/,                    // 视频帧图片
+                /^[a-zA-Z]:\\[^\s]+\.(jpg|jpeg|png|gif|bmp|webp)$/i,  // 更宽松的Windows路径
+                /^\/[^\s]+\.(jpg|jpeg|png|gif|bmp|webp)$/i            // 更宽松的Unix路径
+            ];
+            
+            const isValid = validPathPatterns.some(pattern => pattern.test(path));
+            console.log('路径验证结果:', isValid, '路径:', path);
+            return isValid;
+        }
+        
+        // 展示图片
+        function displayImage(imagePath, imageId, contentDiv) {
+            const imageContainer = document.getElementById(imageId);
+            if (!imageContainer) return;
+            
+            console.log('尝试加载图片:', imagePath);
+            
+            // 创建图片元素
+            const img = document.createElement('img');
+            const apiUrl = `/api/image/${encodeURIComponent(imagePath)}`;
+            img.src = apiUrl;
+            img.alt = `图片: ${imagePath}`;
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '400px';
+            img.style.borderRadius = '10px';
+            img.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+            img.style.border = '2px solid #ddd';
+            
+            // 添加加载事件
+            img.onload = function() {
+                console.log('图片加载成功:', imagePath);
+                imageContainer.innerHTML = '';
+                imageContainer.appendChild(img);
+                
+                // 添加图片说明
+                const caption = document.createElement('div');
+                caption.className = 'image-caption';
+                caption.textContent = `📷 图片路径: ${imagePath}`;
+                imageContainer.appendChild(caption);
+            };
+            
+            // 添加错误处理
+            img.onerror = function() {
+                console.error('图片加载失败:', imagePath, 'API URL:', apiUrl);
+                imageContainer.innerHTML = `
+                    <div class="image-error">
+                        ❌ 无法加载图片: ${imagePath}
+                        <br><small>请检查文件是否存在</small>
+                        <br><small>API URL: ${apiUrl}</small>
+                    </div>
+                `;
+            };
+        }
+
+        // 优化AI助手回复内容显示
+        function optimizeAssistantResponse(content) {
+            try {
+                // 尝试解析JSON格式
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const jsonStr = jsonMatch[0];
+                    const parsed = JSON.parse(jsonStr);
+                    
+                    // 如果是Final Answer格式，只显示action_input内容
+                    if (parsed.action === "Final Answer" && parsed.action_input) {
+                        return parsed.action_input;
+                    }
+                    
+                    // 如果是其他JSON格式，尝试提取有用信息
+                    if (parsed.response) {
+                        return parsed.response;
+                    }
+                    
+                    if (parsed.message) {
+                        return parsed.message;
+                    }
+                    
+                    if (parsed.content) {
+                        return parsed.content;
+                    }
+                }
+                
+                // 检查是否包含特定的JSON模式
+                if (content.includes('"action": "Final Answer"')) {
+                    const actionInputMatch = content.match(/"action_input":\s*"([^"]+)"/);
+                    if (actionInputMatch) {
+                        return actionInputMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                    }
+                }
+                
+                // 如果不是JSON格式，直接返回原内容
+                return content;
+                
+            } catch (error) {
+                // 解析失败，返回原内容
+                console.log('内容优化失败，使用原内容:', error);
+                return content;
+            }
+        }
+
+        // 所有功能已集成到统一的LangChain Agent中，不再需要单独的函数
+
+        // 重置对话
+        async function resetConversation() {
+            try {
+                const response = await fetch('/api/reset_conversation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('chatMessages').innerHTML = `
+                        <div class="message assistant">
+                            <div class="message-header">🤖 AI助手</div>
+                            <div>对话历史已重置！我可以帮助您：</div>
+                            <ul style="margin-top: 10px; margin-left: 20px;">
+                                <li>🎙️ 录制和播放音频</li>
+                                <li>📝 文本转语音</li>
+                                <li>🌐 网页搜索</li>
+                                <li>📊 信息总结</li>
+                                <li>💬 智能对话</li>
+                            </ul>
+                            <div style="margin-top: 10px;">请告诉我您需要什么帮助！</div>
+                        </div>
+                    `;
+                    showAlert('✅ 对话已重置', 'success');
+                    loadStatus();
+                } else {
+                    showAlert(`❌ ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ 重置失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 加载系统状态
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('modelInfo').textContent = data.model_name || data.model;
+                    document.getElementById('modelDescription').textContent = data.model_description || '';
+                    document.getElementById('apiUrl').textContent = data.api_url;
+                    document.getElementById('conversationCount').textContent = data.conversation_count;
+                }
+            } catch (error) {
+                console.error('加载状态失败:', error);
+            }
+        }
+
+        // 加载模型列表
+        async function loadModels() {
+            try {
+                const response = await fetch('/api/models');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('modelSelect');
+                    select.innerHTML = '';
+                    
+                    // 按类别分组显示模型
+                    const categories = {};
+                    data.models.forEach(model => {
+                        const category = model.category || '其他';
+                        if (!categories[category]) {
+                            categories[category] = [];
+                        }
+                        categories[category].push(model);
+                    });
+                    
+                    // 添加选项
+                    Object.keys(categories).forEach(category => {
+                        const optgroup = document.createElement('optgroup');
+                        optgroup.label = category;
+                        
+                        categories[category].forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model.id;
+                            option.textContent = `${model.name} (${model.id})`;
+                            if (model.id === data.current_model) {
+                                option.selected = true;
+                            }
+                            optgroup.appendChild(option);
+                        });
+                        
+                        select.appendChild(optgroup);
+                    });
+                }
+            } catch (error) {
+                console.error('加载模型列表失败:', error);
+            }
+        }
+
+        // 切换模型
+        async function switchModel() {
+            const select = document.getElementById('modelSelect');
+            const modelId = select.value;
+            const statusDiv = document.getElementById('modelSwitchStatus');
+            
+            if (!modelId) return;
+            
+            showAlert('正在切换模型...', 'success');
+            
+            try {
+                const response = await fetch('/api/models/switch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ model_id: modelId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`✅ ${data.message}`, 'success');
+                    loadStatus(); // 重新加载状态
+                } else {
+                    showAlert(`❌ ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ 切换模型失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 从API更新模型列表
+        async function updateModelsFromAPI() {
+            showAlert('正在从API更新模型列表...', 'success');
+            
+            try {
+                const response = await fetch('/api/models/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`✅ ${data.message}`, 'success');
+                    loadModels(); // 重新加载模型列表
+                } else {
+                    showAlert(`❌ ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ 更新模型列表失败: ${error.message}`, 'error');
+            }
+        }
+
+        // Agent切换功能已移除，现在使用统一的LangChain Agent
+
+        // 加载对话历史
+        async function loadConversationHistory() {
+            try {
+                const response = await fetch('/api/conversation_history');
+                const data = await response.json();
+                
+                if (data.success && data.history.length > 0) {
+                    // 这里可以加载历史对话，暂时不实现
+                }
+            } catch (error) {
+                console.error('加载对话历史失败:', error);
+            }
+        }
+
+        // 设置示例
+        function setExample(text) {
+            document.getElementById('messageInput').value = text;
+            document.getElementById('messageInput').focus();
+        }
+
+        // 显示/隐藏加载状态
+        function showLoading(show, text = 'AI正在思考中...') {
+            const loading = document.getElementById('loading');
+            const loadingText = document.getElementById('loadingText');
+            
+            if (show) {
+                loadingText.textContent = text;
+                loading.classList.add('show');
+            } else {
+                loading.classList.remove('show');
+            }
+        }
+
+        // 显示工具调用状态
+        function showToolCall(toolName, status = '正在执行...') {
+            const messagesContainer = document.getElementById('chatMessages');
+            const toolCallDiv = document.createElement('div');
+            toolCallDiv.className = 'tool-call';
+            
+            toolCallDiv.innerHTML = `
+                <div class="tool-name">🔧 调用工具: ${toolName}</div>
+                <div class="tool-status">${status}</div>
+            `;
+            
+            messagesContainer.appendChild(toolCallDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return toolCallDiv;
+        }
+
+        // 显示思考状态
+        function showThinking(text = 'AI正在分析...') {
+            const messagesContainer = document.getElementById('chatMessages');
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'thinking';
+            thinkingDiv.textContent = `💭 ${text}`;
+            
+            messagesContainer.appendChild(thinkingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return thinkingDiv;
+        }
+
+        // 播放文本为语音
+        async function playTextAsSpeech(text) {
+            try {
+                // 如果传入的是原始JSON内容，先进行优化
+                let optimizedText = text;
+                if (text.includes('"action": "Final Answer"') || text.includes('{')) {
+                    optimizedText = optimizeAssistantResponse(text);
+                }
+                
+                // 移除HTML标签，只保留纯文本
+                optimizedText = optimizedText.replace(/<[^>]*>/g, '');
+                
+                // 如果文本为空或太短，不播放
+                if (!optimizedText || optimizedText.trim().length < 2) {
+                    showAlert('❌ 文本内容为空，无法播放语音', 'error');
+                    return;
+                }
+                
+                showAlert('正在生成语音...', 'success');
+                
+                const response = await fetch('/api/text_to_speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: optimizedText
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('✅ 语音播放成功', 'success');
+                } else {
+                    showAlert(`❌ 语音播放失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ 语音播放错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 显示提示信息
+        function showAlert(message, type) {
+            // 创建提示元素
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(alert);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+        }
+
+        // 处理回车键发送
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // 将文本中的http/https链接转为可点击的超链接
+        function linkify(text) {
+            const urlPattern = /(https?:\/\/[^\s<]+)/g;
+            return text.replace(urlPattern, function(url) {
+                // 避免重复包裹
+                if (url.startsWith('<a ')) return url;
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #3366cc; text-decoration: underline;">${url}</a>`;
+            });
+        }
+    </script>
+</body>
+</html> 
